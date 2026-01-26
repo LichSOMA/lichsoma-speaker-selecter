@@ -1,0 +1,58 @@
+{
+    "id": "lichsoma-speaker-selecter",
+    "title": "LichSOMA's Speaker Selecter",
+    "description": "A Module that provide chat header customization, token-independent speaker selection, and chat log html extraction.",
+    "version": "0.1.0",
+    "compatibility": {
+      "minimum": "13",
+      "verified": "13",
+      "maximum": "13"
+    },
+    "authors": [
+      {
+        "name": "LichSoma"
+      }
+    ],
+    "esmodules": [
+        "scripts/lichsoma-speaker-selecter.js",
+        "scripts/lichsoma-chat-ui.js",
+        "scripts/lichsoma-actor-emotions.js",
+        "scripts/lichsoma-chat-merge.js",
+        "scripts/lichsoma-chat-notification.js",
+        "scripts/lichsoma-chat-log-export.js",
+        "scripts/lichsoma-chat-log-archive.js",
+        "scripts/lichsoma-chat-reviser.js",
+        "scripts/lichsoma-chat-ruby-handler.js"
+    ],
+    "styles": [
+        "styles/lichsoma-speaker-selecter.css",
+        "styles/lichsoma-chat-ui.css",
+        "styles/lichsoma-chat-notification.css",
+        "styles/lichsoma-chat-log-archive.css",
+        "styles/lichsoma-chat-styles.css",
+        "styles/lichsoma-actor-emotions.css",
+        "styles/lichsoma-chat-reviser.css",
+        "styles/lichsoma-css-editor.css"
+    ],
+    "languages": [
+      {
+        "lang": "ko",
+        "name": "Korean",
+        "path": "lang/ko.json"
+      }
+    ],
+    "packs": [],
+    "relationships": {
+      "requires": [],
+      "recommends": []
+    },
+  
+    "socket": true,
+    "url": "",
+    "manifest": "",
+    "download": "",
+    "license": "",
+    "readme": ""
+  }
+  
+  
