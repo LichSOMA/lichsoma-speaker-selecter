@@ -207,23 +207,11 @@ export class ChatMerge {
             }
         }
         
-        // PF2E 시스템일 때만 flavor-text 체크
-        const isPF2E = game.system?.id === 'pf2e';
-        let hasFlavorText = false;
-        if (isPF2E) {
-            // 현재 메시지나 이전 메시지의 헤더에 flavor-text가 있으면 머지하지 않음
-            const currentHeader = messageElement.find('.message-header');
-            const prevHeader = prevMessageElement.find('.message-header');
-            hasFlavorText = currentHeader.find('.flavor-text').length > 0 || 
-                           prevHeader.find('.flavor-text').length > 0;
-        }
-        
-        // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고 (PF2E일 경우 flavor-text가 없어야 함), <hr> 뿐인 메시지가 아니어야 함
+        // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고, <hr> 뿐인 메시지가 아니어야 함
         const shouldMerge = (currentUserId === prevUserId) && 
                            (currentPortraitSrc === prevPortraitSrc) && 
                            (currentActorId === prevActorId) &&
                            (currentPortraitSrc !== null) &&
-                           !hasFlavorText &&
                            !isOnlyHr;
         
         if (shouldMerge) {
@@ -306,28 +294,10 @@ export class ChatMerge {
                 }
             }
             
-            // PF2E 시스템일 때만 flavor-text 체크
-            const isPF2E = game.system?.id === 'pf2e';
-            let hasFlavorText = false;
-            let prevHasFlavorText = false;
+            // 이전 메시지가 <hr> 뿐인지 확인
             let prevIsOnlyHr = false;
-            
-            if (isPF2E) {
-                // 현재 메시지의 헤더에 flavor-text가 있는지 확인
-                const currentHeader = $currentMessage.find('.message-header');
-                hasFlavorText = currentHeader.find('.flavor-text').length > 0;
-                
-                // 이전 메시지의 헤더에 flavor-text가 있는지 확인
-                if (prevMeta && prevMeta.messageElement) {
-                    const prevHeader = prevMeta.messageElement.find('.message-header');
-                    prevHasFlavorText = prevHeader.find('.flavor-text').length > 0;
-                    prevIsOnlyHr = this._isOnlyHrMessage(prevMeta.messageElement);
-                }
-            } else {
-                // PF2E가 아니어도 이전 메시지가 <hr> 뿐인지 확인
-                if (prevMeta && prevMeta.messageElement) {
-                    prevIsOnlyHr = this._isOnlyHrMessage(prevMeta.messageElement);
-                }
+            if (prevMeta && prevMeta.messageElement) {
+                prevIsOnlyHr = this._isOnlyHrMessage(prevMeta.messageElement);
             }
             
             // 이전 메시지에 narrator-card가 있는지 확인
@@ -340,14 +310,12 @@ export class ChatMerge {
                 }
             }
             
-            // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고 (PF2E일 경우 flavor-text가 없어야 함), <hr> 뿐인 메시지가 아니어야 함, narrator-card가 없어야 함
+            // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고, <hr> 뿐인 메시지가 아니어야 함, narrator-card가 없어야 함
             if (prevMeta && 
                 prevMeta.userId === currentUserId && 
                 prevMeta.portraitSrc === currentPortraitSrc &&
                 prevMeta.actorId === currentActorId &&
                 currentPortraitSrc !== null &&
-                !hasFlavorText &&
-                !prevHasFlavorText &&
                 !isOnlyHr &&
                 !prevIsOnlyHr &&
                 !prevHasNarratorCard) {

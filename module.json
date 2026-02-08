@@ -2,7 +2,7 @@
     "id": "lichsoma-speaker-selecter",
     "title": "LichSOMA's Speaker Selecter",
     "description": "A Module that provide chat header customization, token-independent speaker selection, and chat log html extraction.",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "compatibility": {
       "minimum": "13",
       "verified": "13",
@@ -22,7 +22,7 @@
         "scripts/lichsoma-chat-log-export.js",
         "scripts/lichsoma-chat-log-archive.js",
         "scripts/lichsoma-chat-reviser.js",
-        "scripts/lichsoma-chat-ruby-handler.js"
+        "scripts/lichsoma-chat-handler.js"
     ],
     "styles": [
         "styles/lichsoma-speaker-selecter.css",
@@ -50,7 +50,7 @@
     "socket": true,
     "url": "https://github.com/LichSOMA/lichsoma-speaker-selecter",
     "manifest": "https://github.com/LichSOMA/lichsoma-speaker-selecter/releases/latest/download/module.json",
-    "download": "https://github.com/LichSOMA/lichsoma-speaker-selecter/releases/download/1.0.0/lichsoma-speaker-selecter.zip",
+    "download": "https://github.com/LichSOMA/lichsoma-speaker-selecter/releases/download/1.1.0/lichsoma-speaker-selecter.zip",
     "license": "https://github.com/LichSOMA/lichsoma-speaker-selecter/blob/main/LICENSE.md",
     "readme": "https://github.com/LichSOMA/lichsoma-speaker-selecter/blob/main/README.md"
   }

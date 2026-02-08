@@ -68,16 +68,17 @@
     background: none !important;
   }
 
-/* 채팅 헤더 스타일 (Double Cross 3rd 스타일 참고) */
+/* 채팅 헤더 스타일 */
 .lichsoma-chat-header {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 8px;
+    column-gap: 8px;
+    row-gap: 0px;
     font-size: 20px;
     font-weight: 700;
     letter-spacing: 0;
-    margin: 4px 0px;
+    margin: 0px;
     background: none;
 }
 
@@ -89,6 +90,8 @@
     width: var(--portrait-size, 36px);
     max-height: var(--portrait-size, 36px);
     max-width: var(--portrait-size, 36px);
+    margin-top: 4px;
+    margin-bottom: 2px;
     background: rgba(115, 115, 115, 0.25);
     display: flex;
     align-items: center;
@@ -96,7 +99,7 @@
     overflow: hidden;
 }
 
-/* 포트레잇 이미지 스타일 (Double Cross 3rd 스타일 참고) */
+/* 포트레잇 이미지 스타일 */
 .lichsoma-chat-portrait-container .lichsoma-chat-portrait {
     height: var(--portrait-size, 36px);
     width: auto;
@@ -109,8 +112,22 @@
     transform-origin: center center;
 }
 
-/* 머지된 메시지: 헤더 감춤 */
-.chat-log .chat-message.lichsoma-merged .lichsoma-chat-header {
+.lichsoma-chat-header .message-sender {
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.lichsoma-chat-header .flavor-text {
+    margin-top: 0px;
+    color: rgb(255, 255, 255, 0.75);
+}
+
+/* 머지된 메시지: 포트레잇과 센더 감춤 */
+.chat-log .chat-message.lichsoma-merged .lichsoma-chat-portrait-container {
+    display: none !important;
+}
+
+.chat-log .chat-message.lichsoma-merged .message-sender {
     display: none !important;
 }
 
@@ -123,6 +140,8 @@
 .chat-log .chat-message.lichsoma-narrator-card .lichsoma-chat-header {
     display: none !important;
 }
+
+
 
 /* narrator-card 스타일 */
 .chat-message .message-content .narrator-card {
@@ -180,6 +199,8 @@
     box-shadow: none !important;
     opacity: 1 !important;
     height: 1px !important;
+    width: 100% !important;
+    color: rgb(255, 255, 255, 0.5) !important;
     margin: 0.2em 0 !important;
     padding: 0 !important;
 }

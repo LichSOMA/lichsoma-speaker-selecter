@@ -6,7 +6,7 @@
 import { ChatUI } from './lichsoma-chat-ui.js';
 import { ActorEmotions } from './lichsoma-actor-emotions.js';
 import { ChatMerge } from './lichsoma-chat-merge.js';
-import { ChatRubyHandler } from './lichsoma-chat-ruby-handler.js';
+import { ChatRubyHandler } from './lichsoma-chat-handler.js';
 
 export class SpeakerSelecter {
     static SETTINGS = {
@@ -2248,6 +2248,45 @@ export class SpeakerSelecter {
                 }
             }
             
+            // "@"로 시작하는 메시지 처리 (OOC로 전환)
+            if (plainTextForDesc.startsWith('@')) {
+                // "@" 부분 제거
+                const oocRemovedText = plainTextForDesc.substring(1).trim();
+                
+                if (oocRemovedText) {
+                    // HTML 태그가 있는 경우 처리
+                    let processedContent = content;
+                    // HTML에서도 "@" 부분 제거 시도
+                    if (content.startsWith('@')) {
+                        // HTML 태그를 유지하면서 "@" 부분만 제거
+                        processedContent = content.replace(/^@\s*/, '');
+                    } else {
+                        // HTML이 없으면 순수 텍스트 사용
+                        processedContent = oocRemovedText;
+                    }
+                    
+                    data.content = processedContent;
+                    if (doc) {
+                        doc.updateSource({ content: processedContent });
+                    }
+                    
+                    // OOC로 설정
+                    const oocSpeakerData = {
+                        alias: game.user.name,
+                        scene: game.scenes.active?.id || null,
+                        actor: null,
+                        token: null
+                    };
+                    // 이미지 주소 계산 및 플래그에 저장
+                    const portraitData = this._getMessageImageSync(oocSpeakerData, userId);
+                    const actorId = oocSpeakerData.actor || null;
+                    // @ 처리된 메시지임을 표시하는 플래그 추가
+                    const extraFlags = { portraitSrc: portraitData.src, portraitScale: portraitData.scale, portraitScaleX: portraitData.scaleX, portraitScaleY: portraitData.scaleY, userId, actorId, isAtOOC: true };
+                    this._applySpeakerData(doc, data, oocSpeakerData, extraFlags);
+                    return; // "@" 처리 완료
+                }
+            }
+            
             // 나레이터 모드 체크 (최우선)
             if (this._narratorModeActive && game.user.isGM) {
                 // HTML 태그 제거하여 순수 텍스트만 추출
@@ -2662,6 +2701,34 @@ export class SpeakerSelecter {
                 const portraitData = this._getMessageImageSync(narratorSpeaker, message.author?.id);
                 const actorId = narratorSpeaker.actor || null;
                 const extraFlags = { portraitSrc: portraitData.src, portraitScale: portraitData.scale, userId: message.author?.id, actorId };
+                const existingFlags = message.flags?.['lichsoma-speaker-selecter'] || {};
+                const mergedFlags = foundry.utils.mergeObject(existingFlags, extraFlags, { inplace: false });
+                message.updateSource({ flags: { 'lichsoma-speaker-selecter': mergedFlags } });
+                
+                this._fromChatInput = false;
+                return;
+            }
+            
+            // "@"로 시작한 메시지 처리 (OOC 강제)
+            const isAtOOC = message.flags?.['lichsoma-speaker-selecter']?.isAtOOC;
+            if (isAtOOC) {
+                // OOC로 설정
+                const oocSpeaker = {
+                    alias: game.user.name,
+                    scene: game.scenes.active?.id || null,
+                    actor: null,
+                    token: null
+                };
+                
+                if (message.speaker?.actor || message.speaker?.token) {
+                    message.updateSource({ speaker: oocSpeaker });
+                    this._ensureMessageSenderAlias(message, game.user.name);
+                }
+                
+                // 이미지 주소 계산 및 플래그에 저장
+                const portraitData = this._getMessageImageSync(oocSpeaker, message.author?.id);
+                const actorId = oocSpeaker.actor || null;
+                const extraFlags = { portraitSrc: portraitData.src, portraitScale: portraitData.scale, userId: message.author?.id, actorId, isAtOOC: true };
                 const existingFlags = message.flags?.['lichsoma-speaker-selecter'] || {};
                 const mergedFlags = foundry.utils.mergeObject(existingFlags, extraFlags, { inplace: false });
                 message.updateSource({ flags: { 'lichsoma-speaker-selecter': mergedFlags } });
