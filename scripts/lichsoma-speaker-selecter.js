@@ -3394,7 +3394,7 @@ export class SpeakerSelecter {
                         volume: 0.5,
                         loop: false,
                         autoplay: true
-                    }, true); // 모든 클라이언트에 재생
+                    }, false); // 로컬에서만 재생 (소켓을 통해 다른 클라이언트에 전파)
                 }
             }
         } catch (e) {
