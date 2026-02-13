@@ -2355,6 +2355,9 @@ export class SpeakerSelecter {
                     : game.actors.get(game.user.character);
                 
                 if (character) {
+                    // "항상 액터로 말하기" 설정 확인
+                    const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
+                    
                     // 할당된 캐릭터의 첫 번째 토큰 찾기 (현재 씬에 있으면)
                     const tokens = canvas.tokens?.placeables?.filter(t => t.actor?.id === character.id) || [];
                     const token = tokens.length > 0 ? tokens[0] : null;
@@ -2363,7 +2366,7 @@ export class SpeakerSelecter {
                         alias: character.name,
                         scene: game.scenes.active?.id || null,
                         actor: character.id,
-                        token: token?.id || null
+                        token: alwaysUseActor ? null : (token?.id || null)
                     };
                     // 감정 포트레잇이 선택된 경우 플래그에 저장
                     const updateData = { speaker: characterSpeakerData };
@@ -2511,10 +2514,11 @@ export class SpeakerSelecter {
             }
             
             // 선택한 토큰이 없을 때 "항상 할당된 캐릭터로 말하기" 적용 (4순위)
-            // "항상 액터로 말하기"는 토큰을 선택했을 때만 적용되므로 여기서는 체크하지 않음
             if (!hasSelectedToken) {
                 // "항상 할당된 캐릭터로 말하기" 설정 확인
                 const alwaysUseCharacter = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_CHARACTER);
+                // "항상 액터로 말하기" 설정 확인
+                const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
                 
                 if (alwaysUseCharacter && game.user.character) {
                     // game.user.character는 이미 Actor 객체이거나 ID일 수 있음
@@ -2532,7 +2536,7 @@ export class SpeakerSelecter {
                             alias: character.name,
                             scene: game.scenes.active?.id || null,
                             actor: character.id,
-                            token: token?.id || null  // 토큰이 있으면 설정, 없으면 null
+                            token: alwaysUseActor ? null : (token?.id || null)  // "항상 액터로 말하기"가 켜져있으면 토큰을 null로 설정
                         };
                         
                         // 이미지 주소 계산 및 플래그에 저장
@@ -2769,6 +2773,9 @@ export class SpeakerSelecter {
                     : game.actors.get(game.user.character);
                 
                 if (character) {
+                    // "항상 액터로 말하기" 설정 확인
+                    const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
+                    
                     // 할당된 캐릭터의 첫 번째 토큰 찾기 (현재 씬에 있으면)
                     const tokens = canvas.tokens?.placeables?.filter(t => t.actor?.id === character.id) || [];
                     const token = tokens.length > 0 ? tokens[0] : null;
@@ -2777,7 +2784,7 @@ export class SpeakerSelecter {
                         alias: character.name,
                         scene: game.scenes.active?.id || null,
                         actor: character.id,
-                        token: token?.id || null
+                        token: alwaysUseActor ? null : (token?.id || null)
                     };
                     
                     // 이미지 주소 계산 및 플래그에 저장
@@ -2935,10 +2942,11 @@ export class SpeakerSelecter {
             }
             
             // 선택한 토큰이 없을 때 "항상 할당된 캐릭터로 말하기" 적용 (4순위)
-            // "항상 액터로 말하기"는 토큰을 선택했을 때만 적용되므로 여기서는 체크하지 않음
             if (!hasSelectedToken) {
                 // "항상 할당된 캐릭터로 말하기" 설정 확인
                 const alwaysUseCharacter = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_CHARACTER);
+                // "항상 액터로 말하기" 설정 확인
+                const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
                 
                 if (alwaysUseCharacter && game.user.character) {
                     const character = game.user.character instanceof Actor 
@@ -2955,7 +2963,7 @@ export class SpeakerSelecter {
                             alias: character.name,
                             scene: game.scenes.active?.id || null,
                             actor: character.id,
-                            token: token?.id || null
+                            token: alwaysUseActor ? null : (token?.id || null)  // "항상 액터로 말하기"가 켜져있으면 토큰을 null로 설정
                         };
                         
                         // 이미지 주소 계산 및 플래그에 저장
