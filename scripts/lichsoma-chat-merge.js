@@ -102,6 +102,14 @@ export class ChatMerge {
     }
     
     /**
+     * 메신저 메시지인지 확인 (lichsoma-fvtt-smartphone 모듈)
+     */
+    static _isMessengerMessage(message) {
+        const flags = message.flags?.['lichsoma-fvtt-smartphone'];
+        return flags && flags.type === 'messenger-message';
+    }
+    
+    /**
      * 단일 메시지에 대해 머지 체크 및 적용 (플래그 기반)
      */
     static _checkAndMergeMessage(message, $html) {
@@ -130,6 +138,15 @@ export class ChatMerge {
             } else {
                 messageElement.removeClass('lichsoma-narrator-card');
             }
+        }
+        
+        // 메신저 메시지 처리 (lichsoma-fvtt-smartphone 모듈)
+        if (this._isMessengerMessage(message)) {
+            messageElement.addClass('lichsoma-messenger-message');
+            messageElement.removeClass('lichsoma-merged');
+            return;
+        } else {
+            messageElement.removeClass('lichsoma-messenger-message');
         }
         
         // 머지 기능이 비활성화되어 있으면 모든 머지 클래스 제거
@@ -205,6 +222,12 @@ export class ChatMerge {
                 messageElement.removeClass('lichsoma-merged');
                 return;
             }
+        }
+        
+        // 이전 메시지가 메신저 메시지이면 머지하지 않음
+        if (this._isMessengerMessage(prevMessage)) {
+            messageElement.removeClass('lichsoma-merged');
+            return;
         }
         
         // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고, <hr> 뿐인 메시지가 아니어야 함
@@ -294,6 +317,17 @@ export class ChatMerge {
                 }
             }
             
+            // 메신저 메시지 처리 (lichsoma-fvtt-smartphone 모듈)
+            if (this._isMessengerMessage(message)) {
+                $currentMessage.addClass('lichsoma-messenger-message');
+                $currentMessage.removeClass('lichsoma-merged');
+                // 메신저 메시지는 prevMeta를 null로 설정하여 다음 메시지와 머지되지 않도록 함
+                prevMeta = null;
+                return;
+            } else {
+                $currentMessage.removeClass('lichsoma-messenger-message');
+            }
+            
             // 이전 메시지가 <hr> 뿐인지 확인
             let prevIsOnlyHr = false;
             if (prevMeta && prevMeta.messageElement) {
@@ -310,7 +344,13 @@ export class ChatMerge {
                 }
             }
             
-            // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고, <hr> 뿐인 메시지가 아니어야 함, narrator-card가 없어야 함
+            // 이전 메시지가 메신저 메시지인지 확인
+            let prevIsMessengerMessage = false;
+            if (prevMeta && prevMeta.message) {
+                prevIsMessengerMessage = this._isMessengerMessage(prevMeta.message);
+            }
+            
+            // 머지 조건 확인: userId, portraitSrc, actorId가 모두 일치하고, <hr> 뿐인 메시지가 아니어야 함, narrator-card가 없어야 함, 메신저 메시지가 아니어야 함
             if (prevMeta && 
                 prevMeta.userId === currentUserId && 
                 prevMeta.portraitSrc === currentPortraitSrc &&
@@ -318,7 +358,8 @@ export class ChatMerge {
                 currentPortraitSrc !== null &&
                 !isOnlyHr &&
                 !prevIsOnlyHr &&
-                !prevHasNarratorCard) {
+                !prevHasNarratorCard &&
+                !prevIsMessengerMessage) {
                 $currentMessage.addClass('lichsoma-merged');
             } else {
                 $currentMessage.removeClass('lichsoma-merged');
@@ -326,7 +367,8 @@ export class ChatMerge {
                     userId: currentUserId, 
                     portraitSrc: currentPortraitSrc, 
                     actorId: currentActorId,
-                    messageElement: $currentMessage
+                    messageElement: $currentMessage,
+                    message: message
                 };
             }
         });
