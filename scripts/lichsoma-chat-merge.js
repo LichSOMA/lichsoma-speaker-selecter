@@ -4,7 +4,6 @@
  */
 
 export class ChatMerge {
-    static _pendingNextMessageId = null;
     static SETTING_KEY = 'enableChatMerge';
     
     static initialize() {
@@ -26,58 +25,44 @@ export class ChatMerge {
             }, 0);
         });
         
-        // 메시지 삭제 전에 다음 메시지 ID 저장
-        Hooks.on('preDeleteChatMessage', (message, options, userId) => {
-            // 삭제될 메시지의 DOM 요소 찾기
-            const messageElement = document.querySelector(`.chat-message[data-message-id="${message.id}"]`);
-            if (!messageElement) return;
-            
-            // 다음 메시지 찾기
-            const $messageElement = $(messageElement);
-            const nextMessageElement = $messageElement.next('.chat-message');
-            
-            if (nextMessageElement.length) {
-                const nextMessageId = nextMessageElement.attr('data-message-id');
-                if (nextMessageId) {
-                    // 삭제 후 처리를 위해 다음 메시지 ID 저장
-                    this._pendingNextMessageId = nextMessageId;
-                }
-            }
-        });
-        
-        // 메시지 삭제 후 다음 메시지의 머지 조건 재확인
+        // 메시지 삭제 후 다음 메시지의 머지 조건 재확인 (모든 클라이언트에서 동작)
         Hooks.on('deleteChatMessage', (message, options, userId) => {
-            if (this._pendingNextMessageId) {
-                const nextMessageId = this._pendingNextMessageId;
-                const deletedMessageId = message.id;
-                this._pendingNextMessageId = null;
+            // 삭제된 메시지보다 나중 타임스탬프를 가진 메시지 중 가장 빠른 것 = 바로 다음 메시지
+            const deletedTimestamp = message.timestamp ?? 0;
+            const nextMessage = game.messages.contents
+                .filter(m => (m.timestamp ?? 0) > deletedTimestamp)
+                .sort((a, b) => (a.timestamp ?? 0) - (b.timestamp ?? 0))[0];
+            
+            if (!nextMessage) return;
+            
+            const nextMessageId = nextMessage.id;
+            const deletedMessageId = message.id;
+            
+            // 삭제된 메시지가 DOM에서 완전히 제거될 때까지 기다림
+            const checkAndUpdate = (attempt = 0) => {
+                const maxAttempts = 10; // 최대 10번 시도 (약 500ms)
                 
-                // 삭제된 메시지가 DOM에서 완전히 제거될 때까지 기다림
-                const checkAndUpdate = (attempt = 0) => {
-                    const maxAttempts = 10; // 최대 10번 시도 (약 500ms)
-                    
-                    // 삭제된 메시지가 DOM에 아직 남아있는지 확인
-                    const deletedElement = document.querySelector(`.chat-message[data-message-id="${deletedMessageId}"]`);
-                    if (deletedElement && attempt < maxAttempts) {
-                        setTimeout(() => checkAndUpdate(attempt + 1), 50);
-                        return;
-                    }
-                    
-                    // 삭제된 메시지가 제거되었거나 최대 시도 횟수에 도달했으면 진행
-                    const nextMessage = game.messages.get(nextMessageId);
-                    if (!nextMessage) return;
-                    
-                    // 다음 메시지의 DOM 요소 찾기
-                    const nextMessageElement = document.querySelector(`.chat-message[data-message-id="${nextMessageId}"]`);
-                    if (!nextMessageElement) return;
-                    
-                    // 다음 메시지에 대해 머지 체크 재실행
-                    this._checkAndMergeMessage(nextMessage, $(nextMessageElement));
-                };
+                // 삭제된 메시지가 DOM에 아직 남아있는지 확인
+                const deletedElement = document.querySelector(`.chat-message[data-message-id="${deletedMessageId}"]`);
+                if (deletedElement && attempt < maxAttempts) {
+                    setTimeout(() => checkAndUpdate(attempt + 1), 50);
+                    return;
+                }
                 
-                // 첫 번째 시도 (50ms 후)
-                setTimeout(() => checkAndUpdate(0), 50);
-            }
+                // 삭제된 메시지가 제거되었거나 최대 시도 횟수에 도달했으면 진행
+                const nextMsg = game.messages.get(nextMessageId);
+                if (!nextMsg) return;
+                
+                // 다음 메시지의 DOM 요소 찾기
+                const nextMessageElement = document.querySelector(`.chat-message[data-message-id="${nextMessageId}"]`);
+                if (!nextMessageElement) return;
+                
+                // 다음 메시지에 대해 머지 체크 재실행
+                this._checkAndMergeMessage(nextMsg, $(nextMessageElement));
+            };
+            
+            // 첫 번째 시도 (50ms 후)
+            setTimeout(() => checkAndUpdate(0), 50);
         });
     }
     

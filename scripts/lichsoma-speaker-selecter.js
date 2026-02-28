@@ -80,6 +80,21 @@ export class SpeakerSelecter {
             }
             if (!flags.portraitSrc || !flags.userId) {
                 let speakerData = message.speaker;
+                if (speakerData && speakerData.token) {
+                    // speaker가 이미 있지만 token이 설정된 경우: "항상 액터로 말하기" 적용 (본인 메시지만)
+                    const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
+                    if (alwaysUseActor && message.author?.id === game.user.id) {
+                        const tokenFromSpeaker = canvas.tokens?.placeables?.find(t => t.id === speakerData.token);
+                        if (tokenFromSpeaker?.actor) {
+                            speakerData = {
+                                alias: tokenFromSpeaker.actor.name,
+                                scene: speakerData.scene || game.scenes.active?.id || null,
+                                actor: tokenFromSpeaker.actor.id,
+                                token: null
+                            };
+                        }
+                    }
+                }
                 if (!speakerData) {
                     // speaker가 없으면 선택한 토큰에서 가져오기
                     const selectedTokens = canvas.tokens?.controlled || [];
@@ -1403,8 +1418,13 @@ export class SpeakerSelecter {
         }
         
         // 감정 포트레잇이 없으면 기본 우선순위: 토큰 이미지 > 액터 이미지 > 유저 아바타 > 할당된 캐릭터 이미지
+        // "항상 액터로 말하기" 설정 시 본인 메시지는 토큰 대신 액터 이미지 사용
         if (!img) {
-            if (speaker.token) {
+            const useActorForPortrait = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR)
+                && message.author?.id === game.user.id
+                && speaker.token
+                && actorId;
+            if (speaker.token && !useActorForPortrait) {
                 const token = canvas?.tokens?.placeables?.find(t => t.id === speaker.token);
                 if (token) {
                     img = token?.document?.texture?.src || token?.texture?.src || null;
@@ -2598,6 +2618,24 @@ export class SpeakerSelecter {
             if (!this._fromChatInput) {
                 // 플래그에 이미지 주소 저장 (머지 기능을 위해 필요)
                 let speakerData = message.speaker;
+                if (speakerData && speakerData.token && message.author?.id === game.user.id) {
+                    // speaker가 이미 있지만 token이 설정된 경우: "항상 액터로 말하기" 적용
+                    const alwaysUseActor = game.settings.get('lichsoma-speaker-selecter', this.SETTINGS.ALWAYS_USE_ACTOR);
+                    if (alwaysUseActor) {
+                        const tokenFromSpeaker = canvas.tokens?.placeables?.find(t => t.id === speakerData.token);
+                        if (tokenFromSpeaker?.actor) {
+                            speakerData = {
+                                alias: tokenFromSpeaker.actor.name,
+                                scene: speakerData.scene || game.scenes.active?.id || null,
+                                actor: tokenFromSpeaker.actor.id,
+                                token: null
+                            };
+                            // 메시지 speaker도 액터로 업데이트 (다른 클라이언트/재렌더 시 일관성)
+                            message.updateSource({ speaker: speakerData });
+                            this._ensureMessageSenderAlias(message, speakerData.alias);
+                        }
+                    }
+                }
                 if (!speakerData) {
                     // speaker가 없으면 선택한 토큰에서 가져오기
                     const selectedTokens = canvas.tokens?.controlled || [];
