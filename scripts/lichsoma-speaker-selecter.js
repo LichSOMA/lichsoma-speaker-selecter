@@ -2158,8 +2158,11 @@ export class SpeakerSelecter {
             if (!this._fromChatInput) {
                 // 플래그에 이미지 주소 저장 (머지 기능을 위해 필요)
                 let speakerData = data.speaker || doc.speaker;
-                if (!speakerData) {
-                    // speaker가 없으면 선택한 토큰에서 가져오기
+                let needsSpeakerUpdate = false;
+                
+                // speaker가 없거나, speaker는 있지만 actor가 없는 경우 보완
+                if (!speakerData || !speakerData.actor) {
+                    // 선택한 토큰에서 가져오기
                     const selectedTokens = canvas.tokens?.controlled || [];
                     if (selectedTokens.length > 0) {
                         const token = selectedTokens[0];
@@ -2180,15 +2183,17 @@ export class SpeakerSelecter {
                                         actor: character.id,
                                         token: null
                                     };
+                                    needsSpeakerUpdate = true;
                                 }
                             }
-                        } else {
+                        } else if (token.actor) {
                             speakerData = {
-                                alias: token.actor?.name || token.name,
+                                alias: token.actor.name,
                                 scene: game.scenes.active?.id || null,
-                                actor: token.actor?.id || null,
+                                actor: token.actor.id,
                                 token: token.id || null
                             };
+                            needsSpeakerUpdate = true;
                         }
                     } else if (game.user.character) {
                         // 토큰도 없으면 할당된 캐릭터 사용
@@ -2202,6 +2207,7 @@ export class SpeakerSelecter {
                                 actor: character.id,
                                 token: null
                             };
+                            needsSpeakerUpdate = true;
                         }
                     }
                 }
@@ -2210,7 +2216,13 @@ export class SpeakerSelecter {
                     const portraitData = this._getMessageImageSync(speakerData, userId);
                     const actorId = speakerData.actor || null;
                     const extraFlags = { portraitSrc: portraitData.src, portraitScale: portraitData.scale, portraitScaleX: portraitData.scaleX, portraitScaleY: portraitData.scaleY, userId, actorId };
-                    this._applySenderFlagsToDoc(doc, data, null, extraFlags);
+                    
+                    // speaker를 보완한 경우 실제 메시지에도 적용
+                    if (needsSpeakerUpdate) {
+                        this._applySpeakerData(doc, data, speakerData, extraFlags);
+                    } else {
+                        this._applySenderFlagsToDoc(doc, data, null, extraFlags);
+                    }
                 }
                 return;
             }

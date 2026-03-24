@@ -40,12 +40,12 @@ export class ChatMerge {
             
             // 삭제된 메시지가 DOM에서 완전히 제거될 때까지 기다림
             const checkAndUpdate = (attempt = 0) => {
-                const maxAttempts = 10; // 최대 10번 시도 (약 500ms)
+                const maxAttempts = 10; // 최대 10번 시도 (약 1000ms)
                 
                 // 삭제된 메시지가 DOM에 아직 남아있는지 확인
                 const deletedElement = document.querySelector(`.chat-message[data-message-id="${deletedMessageId}"]`);
                 if (deletedElement && attempt < maxAttempts) {
-                    setTimeout(() => checkAndUpdate(attempt + 1), 50);
+                    setTimeout(() => checkAndUpdate(attempt + 1), 100);
                     return;
                 }
                 
@@ -61,8 +61,8 @@ export class ChatMerge {
                 this._checkAndMergeMessage(nextMsg, $(nextMessageElement));
             };
             
-            // 첫 번째 시도 (50ms 후)
-            setTimeout(() => checkAndUpdate(0), 50);
+            // 첫 번째 시도 (10ms 후)
+            setTimeout(() => checkAndUpdate(0), 100);
         });
     }
     
