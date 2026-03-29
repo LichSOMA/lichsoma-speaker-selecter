@@ -2160,8 +2160,8 @@ export class SpeakerSelecter {
                 let speakerData = data.speaker || doc.speaker;
                 let needsSpeakerUpdate = false;
                 
-                // speaker가 없거나, speaker는 있지만 actor가 없는 경우 보완
-                if (!speakerData || !speakerData.actor) {
+                // speaker가 없을 때만 보완 (actor만 비어 있는 경우는 건드리지 않음)
+                if (!speakerData) {
                     // 선택한 토큰에서 가져오기
                     const selectedTokens = canvas.tokens?.controlled || [];
                     if (selectedTokens.length > 0) {
